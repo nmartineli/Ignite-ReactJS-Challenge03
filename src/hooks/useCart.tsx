@@ -34,10 +34,29 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
-      const addedProduct = await api
+      let newCart;
+
+      const addedProductData = await api
         .get(`/products/${productId}`)
         .then((response) => response.data);
-      setCart([...cart, addedProduct]);
+
+      let addedProduct = { ...addedProductData, amount: 1 };
+
+      const cartProductIndex = cart.findIndex(
+        (item) => item.id == addedProductData.id
+      );
+
+      if (cartProductIndex !== -1) {
+        let previouslyAddedProduct = cart[cartProductIndex];
+        previouslyAddedProduct.amount += 1;
+        addedProduct = previouslyAddedProduct;
+
+        newCart = cart.filter((item) => item != previouslyAddedProduct);
+      } else {
+        newCart = cart;
+      }
+
+      setCart([...newCart, addedProduct]);
 
       localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
     } catch {
