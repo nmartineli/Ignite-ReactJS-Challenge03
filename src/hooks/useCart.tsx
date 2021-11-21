@@ -46,12 +46,20 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         (item) => item.id == addedProductData.id
       );
 
+      const stock = await api
+        .get(`stock/${productId}`)
+        .then((response) => response.data.amount);
+
       if (cartProductIndex !== -1) {
         let previouslyAddedProduct = cart[cartProductIndex];
-        previouslyAddedProduct.amount += 1;
-        addedProduct = previouslyAddedProduct;
 
-        newCart = cart.filter((item) => item != previouslyAddedProduct);
+        if (previouslyAddedProduct.amount + 1 <= stock) {
+          previouslyAddedProduct.amount += 1;
+          addedProduct = previouslyAddedProduct;
+          newCart = cart.filter((item) => item != previouslyAddedProduct);
+        } else {
+          throw new Error();
+        }
       } else {
         newCart = cart;
       }
@@ -60,24 +68,30 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
       localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
     } catch {
-      // TODO
+      toast.error('Quantidade solicitada fora de estoque');
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      const storagedCartData = JSON.parse(
+        localStorage.getItem('@RocketShoes:cart') || '{}'
+      );
+
+      const updatedCart = storagedCartData.filter(
+        (product: Product) => product.id != productId
+      );
+
+      setCart(updatedCart);
+
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
     } catch {
-      // TODO
+      toast.error('Erro na remoção do produto');
     }
   };
 
-  const updateProductAmount = async ({
-    productId,
-    amount,
-  }: UpdateProductAmount) => {
+  const updateProductAmount = ({ productId, amount }: UpdateProductAmount) => {
     try {
-      // TODO
     } catch {
       // TODO
     }
@@ -96,4 +110,7 @@ export function useCart(): CartContextData {
   const context = useContext(CartContext);
 
   return context;
+}
+function updatedItem(updatedItem: any) {
+  throw new Error('Function not implemented.');
 }

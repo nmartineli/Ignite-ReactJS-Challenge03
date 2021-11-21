@@ -12,8 +12,6 @@ const Header = (): JSX.Element => {
     new Set(cart.map((product) => product.id))
   ).length;
 
-  console.log(cart);
-
   return (
     <Container>
       <Link to="/">
